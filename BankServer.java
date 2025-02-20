@@ -1,79 +1,85 @@
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
-class BankServer extends BankAccount {
-    private final String userPIN = "1234"; // Default PIN for authentication
+class BankServer {
+    private Map<String, BankAccount> accounts; // Stores user accounts
+    private Scanner scanner;
+    
+    public BankServer() {
+        this.accounts = new HashMap<>();
+        this.scanner = new Scanner(System.in);
 
-    public BankServer(double initialDeposit) {
-        super(initialDeposit);
+        // Sample Users (AccountNumber -> BankAccount)
+        accounts.put("1001", new BankAccount("1001", "1234", 10000));  // User 1
+        accounts.put("1002", new BankAccount("1002", "5678", 15000));  // User 2
     }
 
-    // Function to verify PIN
-    private boolean verifyPIN() {
-        Scanner scanner = new Scanner(System.in);
-        int attempts = 3;
+    // User Authentication
+    private BankAccount authenticateUser() {
+        System.out.print("Enter Account Number: ");
+        String accNumber = scanner.next();
 
-        while (attempts > 0) {
-            System.out.print("Enter your PIN: ");
-            String enteredPIN = scanner.next();
+        System.out.print("Enter PIN: ");
+        String pin = scanner.next();
 
-            if (enteredPIN.equals(userPIN)) {
-                System.out.println("Authentication successful!\n");
-                return true;
-            } else {
-                attempts--;
-                System.out.println("Incorrect PIN! Attempts remaining: " + attempts);
+        if (accounts.containsKey(accNumber) && accounts.get(accNumber).verifyPIN(pin)) {
+            System.out.println("Login successful!\n");
+            return accounts.get(accNumber);
+        } else {
+            System.out.println("Invalid Account Number or PIN!");
+            return null;
+        }
+    }
+
+    public void start() {
+        System.out.println("--- Welcome to Secure Multi-User Bank ATM ---");
+        
+        while (true) {
+            BankAccount user = authenticateUser();
+            if (user == null) {
+                System.out.println("Try again.\n");
+                continue;
             }
 
-            if (attempts == 0) {
-                System.out.println("Too many incorrect attempts! Account locked.");
-                return false;
+            // ATM Menu
+            while (true) {
+                System.out.println("\n--- ATM MENU ---");
+                System.out.println("1. Check Balance");
+                System.out.println("2. Withdraw Cash");
+                System.out.println("3. Deposit Cash");
+                System.out.println("4. Logout");
+                System.out.print("Choose an option: ");
+                
+                int choice = scanner.nextInt();
+                switch (choice) {
+                    case 1:
+                        user.getBalance();
+                        break;
+                    case 2:
+                        System.out.print("Enter withdrawal amount: ₹");
+                        double withdrawAmount = scanner.nextDouble();
+                        user.getCash(withdrawAmount);
+                        break;
+                    case 3:
+                        System.out.print("Enter deposit amount: ₹");
+                        double depositAmount = scanner.nextDouble();
+                        user.depositCash(depositAmount);
+                        break;
+                    case 4:
+                        System.out.println("Logged out successfully!");
+                        break;
+                    default:
+                        System.out.println("Invalid choice! Try again.");
+                }
+                
+                if (choice == 4) break;
             }
         }
-        return false;
     }
 
     public static void main(String[] args) {
-        BankServer userAccount = new BankServer(10000); // Single User with ₹10,000 deposit
-        CDM depositMachine = new CDM(userAccount);
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.println("--- Welcome to the Secure Bank ATM ---");
-
-        // Authenticate User Before Proceeding
-        if (!userAccount.verifyPIN()) {
-            System.exit(0);
-        }
-
-        while (true) {
-            System.out.println("\n--- ATM MENU ---");
-            System.out.println("1. Check Balance");
-            System.out.println("2. Withdraw Cash");
-            System.out.println("3. Deposit Cash");
-            System.out.println("4. Exit");
-            System.out.print("Choose an option: ");
-
-            int choice = scanner.nextInt();
-            switch (choice) {
-                case 1:
-                    userAccount.getBalance();
-                    break;
-                case 2:
-                    System.out.print("Enter withdrawal amount: ₹");
-                    double withdrawAmount = scanner.nextDouble();
-                    userAccount.getCash(withdrawAmount);
-                    break;
-                case 3:
-                    System.out.print("Enter deposit amount: ₹");
-                    double depositAmount = scanner.nextDouble();
-                    depositMachine.depositCash(depositAmount);
-                    break;
-                case 4:
-                    System.out.println("Thank you for using our ATM!");
-                    scanner.close();
-                    System.exit(0);
-                default:
-                    System.out.println("Invalid choice! Please try again.");
-            }
-        }
+        BankServer bank = new BankServer();
+        bank.start();
     }
 }
