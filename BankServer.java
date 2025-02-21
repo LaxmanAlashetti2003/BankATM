@@ -48,7 +48,8 @@ class BankServer {
                 System.out.println("1. Check Balance");
                 System.out.println("2. Withdraw Cash");
                 System.out.println("3. Deposit Cash");
-                System.out.println("4. Logout");
+                System.out.println("4. View Transaction History");
+                System.out.println("5. Logout");
                 System.out.print("Choose an option: ");
                 
                 int choice = scanner.nextInt();
@@ -67,13 +68,16 @@ class BankServer {
                         user.depositCash(depositAmount);
                         break;
                     case 4:
+                        user.viewTransactionHistory();
+                        break;
+                    case 5:
                         System.out.println("Logged out successfully!");
                         break;
                     default:
                         System.out.println("Invalid choice! Try again.");
                 }
                 
-                if (choice == 4) break;
+                if (choice == 5) break;
             }
         }
     }
